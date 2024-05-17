@@ -6,7 +6,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Welcome to Carbon Data Rater</h1>
+        <h1>Welcome to the Carbon Project Rater</h1>
       </header>
       <main>
         <ProjectList />
