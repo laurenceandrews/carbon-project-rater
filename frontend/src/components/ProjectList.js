@@ -7,12 +7,14 @@ const ProjectList = () => {
   useEffect(() => {
     axios.get('http://127.0.0.1:5000/projects')
       .then(response => {
+        console.log("Data received:", response.data.projects);
         setProjects(response.data.projects);
       })
       .catch(error => {
         console.error('There was an error fetching the projects!', error);
       });
   }, []);
+  
 
   return (
     <div>
