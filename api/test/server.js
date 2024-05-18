@@ -3,6 +3,9 @@ const axios = require('axios');
 const cors = require('cors');
 
 const app = express();
+
+module.exports = app;
+
 app.use(cors());
 app.use(express.json());
 
