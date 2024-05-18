@@ -289,3 +289,68 @@ cython_debug/
 #  and can be added to the global gitignore or merged into this file.  For a more nuclear
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
+
+# Environment secrets
+*.env.local
+*.env.development.local
+*.env.test.local
+*.env.production.local
+
+# Development tool configurations
+.idea/            # JetBrains IDE
+.vscode/          # Visual Studio Code settings
+.DS_Store         # MacOS folder metadata
+
+# Python
+*.pyc             # Compiled Python files
+__pycache__/      # Python 3 bytecode compiled cache
+*.pyo             # Compiled Python object
+*.pyd             # Python Dynamic module
+
+# Node specific
+.npmrc            # NPM configuration file
+.package-lock.json  # It's typically recommended to keep package-lock.json but if you have a reason to exclude it
+
+# React specific
+/build/           # React build directory
+/public/          # Public folder if not used
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+
+# Operating system generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# DBT specific
+/dbt_modules/     # DBT modules directory
+/dbt_packages/    # DBT packages directory
+/target/          # DBT target directory
+
+# Test coverage
+/coverage/
+*.cover
+*.coverage
+*.coverage.*
+
+# Compiled Static libraries
+*.lib
+*.dll
+*.exe
+*.o
+*.so
+
+# Dynamic libs
+*.dylib
+
+# Binary and executable files
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
