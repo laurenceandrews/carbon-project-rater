@@ -1,0 +1,12 @@
+name: 'carbon_project_rater'
+version: '1.0.0'
+profile: 'carbon_project_rater'
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_modules"
+
+models:
+  carbon_project_rater:
+    +materialized: view
