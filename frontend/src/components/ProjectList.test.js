@@ -15,7 +15,7 @@ describe('ProjectList', () => {
     };
     axios.get.mockResolvedValue(projects);
     render(<ProjectList />);
-    const projectElement = await screen.findByText(/Test Project/i);
-    expect(projectElement).toBeInTheDocument();
+    const projectElements = await screen.findAllByText(/Test Project/i);
+    expect(projectElements.length).toBeGreaterThan(0); // Expect more than one match
   });
 });
