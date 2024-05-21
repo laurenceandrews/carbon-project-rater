@@ -354,3 +354,15 @@ Desktop.ini
 *.zip
 *.tar.gz
 *.rar
+
+# Cypress artifacts
+cypress/videos/
+cypress/screenshots/
+cypress/logs/
+cypress/cache/
+
+# Sensitive data
+cypress.env.json
+
+# Dependencies
+node_modules/
