@@ -5,7 +5,7 @@ const ProjectList = () => {
   const [projects, setProjects] = useState([]);
 
   useEffect(() => {
-    axios.get('http://127.0.0.1:5000/projects')
+    axios.get('http://localhost:5001/projects')
       .then(response => {
         console.log("Data received:", response.data.projects);
         setProjects(response.data.projects);
@@ -14,7 +14,6 @@ const ProjectList = () => {
         console.error('There was an error fetching the projects!', error);
       });
   }, []);
-  
 
   return (
     <div>

@@ -1,12 +1,11 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
-from flask_migrate import Migrate, upgrade
+from flask_migrate import Migrate
 
 app = Flask(__name__)
 CORS(app)
 
-# Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:password@db/carbon_project_rater'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -77,18 +76,25 @@ def not_found(error):
     return jsonify({'error': 'Not found'}), 404
 
 def populate_database():
-    exists = CarbonProject.query.first()
-    if not exists:
-        projects = [
-            CarbonProject(name='Green Energy Project', description='A project to create sustainable green energy solutions.', rating=5),
-            CarbonProject(name='Reforestation Initiative', description='A project aimed at reforesting depleted forests.', rating=4),
-            CarbonProject(name='Ocean Cleanup', description='A project to clean plastics and other waste from the oceans.', rating=5)
-        ]
-        db.session.bulk_save_objects(projects)
-        db.session.commit()
+    print("Checking if database needs to be populated...")
+    with app.app_context():
+        if not CarbonProject.query.first():
+            print("No projects found, populating database...")
+            projects = [
+                CarbonProject(name='Green Energy Project', description='A project to create sustainable green energy solutions.', rating=5),
+                CarbonProject(name='Reforestation Initiative', description='A project aimed at reforesting depleted forests.', rating=4),
+                CarbonProject(name='Ocean Cleanup', description='A project to clean plastics and other waste from the oceans.', rating=5)
+            ]
+            db.session.bulk_save_objects(projects)
+            db.session.commit()
+            print("Database populated with initial data.")
+        else:
+            print("Database already populated.")
+
+@app.cli.command("populate_db")
+def populate_database_command():
+    """Populates the database with initial data."""
+    populate_database()
 
 if __name__ == '__main__':
-    with app.app_context():
-        upgrade()  # Applying migrations
-        populate_database()  # Populating database
     app.run(host='0.0.0.0', port=5000, debug=True)
