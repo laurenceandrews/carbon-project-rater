@@ -15,9 +15,16 @@ migrate = Migrate(app, db)
 class CarbonProject(db.Model):
     """Model for carbon projects."""
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(255), nullable=False)
-    description = db.Column(db.Text)
-    rating = db.Column(db.Integer)
+    facility_name = db.Column(db.String(255), nullable=False)
+    city = db.Column(db.String(100))
+    state = db.Column(db.String(50))
+    zip_code = db.Column(db.String(20))
+    address = db.Column(db.String(255))
+    county = db.Column(db.String(100))
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+    industry_type = db.Column(db.String(50))
+    year_data = db.Column(db.JSON)
 
     def __repr__(self):
         return f'<CarbonProject {self.name}>'
