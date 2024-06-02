@@ -1,10 +1,15 @@
+import logging
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
+from load_data import register_commands
 
 app = Flask(__name__)
 CORS(app)
+register_commands(app)
+
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:password@db/carbon_project_rater'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -16,18 +21,18 @@ class CarbonProject(db.Model):
     """Model for carbon projects."""
     id = db.Column(db.Integer, primary_key=True)
     facility_name = db.Column(db.String(255), nullable=False)
-    city = db.Column(db.String(100))
-    state = db.Column(db.String(50))
-    zip_code = db.Column(db.String(20))
+    city = db.Column(db.String(255))
+    state = db.Column(db.String(255))
+    zip_code = db.Column(db.String(10))
     address = db.Column(db.String(255))
-    county = db.Column(db.String(100))
+    county = db.Column(db.String(255))
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
-    industry_type = db.Column(db.String(50))
-    year_data = db.Column(db.JSON)
+    industry_type = db.Column(db.String(255))
+    total_mass_co2_sequestered = db.Column(db.Float)
 
     def __repr__(self):
-        return f'<CarbonProject {self.name}>'
+        return f'<CarbonProject {self.facility_name}>'
 
 @app.route('/')
 def home():

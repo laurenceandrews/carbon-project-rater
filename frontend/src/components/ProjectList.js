@@ -21,8 +21,13 @@ const ProjectList = () => {
       <ul>
         {projects.map(project => (
           <li key={project.id}>
-            <h2>{project.name}</h2>
-            <p>{project.description}</p>
+            <h2>{project.facility_name}</h2>
+            <p>Location: {project.city}, {project.state} ({project.zip_code})</p>
+            <p>Address: {project.address}</p>
+            <p>County: {project.county}</p>
+            <p>Industry Type: {project.industry_type}</p>
+            <p>Latitude: {project.latitude}, Longitude: {project.longitude}</p>
+            <p>Total Mass of CO2 Sequestered (most recent year): {project.total_mass_co2_sequestered.toFixed(2)} tons</p>
             <p>Rating: {project.rating}</p>
           </li>
         ))}
