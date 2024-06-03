@@ -44,20 +44,44 @@ def home():
 def get_projects():
     """Endpoint to retrieve all projects."""
     projects = CarbonProject.query.all()
-    return jsonify({'projects': [{'id': p.id, 'name': p.name, 'description': p.description, 'rating': p.rating} for p in projects]})
+    return jsonify({'projects': [
+        {
+            'id': p.id,
+            'facility_name': p.facility_name,
+            'city': p.city,
+            'state': p.state,
+            'zip_code': p.zip_code,
+            'address': p.address,
+            'county': p.county,
+            'latitude': p.latitude,
+            'longitude': p.longitude,
+            'industry_type': p.industry_type,
+            'total_mass_co2_sequestered': p.total_mass_co2_sequestered,
+            'rating': None  # Assuming this will be calculated or set later
+        } for p in projects
+    ]})
 
 @app.route('/projects', methods=['POST'])
 def create_project():
     """Endpoint to create a new project from JSON data."""
     data = request.get_json()
-    if not data or 'name' not in data or 'rating' not in data:
+    if not data or 'facility_name' not in data:
         return jsonify({'error': 'Missing data'}), 400
-    if not isinstance(data['rating'], int) or data['rating'] < 0 or data['rating'] > 5:
-        return jsonify({'error': 'Rating must be an integer between 0 and 5'}), 400
-    new_project = CarbonProject(name=data['name'], description=data['description'], rating=data['rating'])
+    new_project = CarbonProject(
+        facility_name=data['facility_name'],
+        city=data.get('city'),
+        state=data.get('state'),
+        zip_code=data.get('zip_code'),
+        address=data.get('address'),
+        county=data.get('county'),
+        latitude=float(data.get('latitude')) if data.get('latitude') else None,
+        longitude=float(data.get('longitude')) if data.get('longitude') else None,
+        industry_type=data.get('industry_type'),
+        total_mass_co2_sequestered=float(data.get('total_mass_co2_sequestered')) if data.get('total_mass_co2_sequestered') else None
+    )
     db.session.add(new_project)
     db.session.commit()
-    return jsonify({'message': 'Project created', 'project': {'name': new_project.name, 'description': new_project.description, 'rating': new_project.rating}}), 201
+    return jsonify({'message': 'Project created', 'project': {'id': new_project.id, 'facility_name': new_project.facility_name}}), 201
 
 @app.route('/projects/<int:id>', methods=['PUT'])
 def update_project(id):
