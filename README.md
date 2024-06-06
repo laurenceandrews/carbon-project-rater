@@ -22,6 +22,7 @@ The Carbon Project Rater is a full-stack application designed to rate carbon off
 - Rate carbon offset projects based on predefined criteria.
 - Retrieve, create, update, and delete project ratings.
 - Interactive frontend for displaying project ratings.
+- Automated data loading from CSV files.
 - Data transformation using DBT for efficient data handling and reporting.
 
 ## Setup and Installation
@@ -34,12 +35,16 @@ The Carbon Project Rater is a full-stack application designed to rate carbon off
 To get the application running locally with Docker:
 
 1. Clone the repository:
+```
    git clone https://github.com/yourusername/carbon-project-rater.git
    cd carbon-project-rater
+```
 
-2. Build and run the containers:
-   ensure docker desktop is running
+3. Build and run the containers:
+```
+   # Ensure docker desktop is running
    docker-compose up --build
+```
 
 This command will start all services specified in `docker-compose.yml`. The frontend will be accessible at http://localhost:3000, the API at http://localhost:5001, and the backend at http://localhost:4000. The database will run on the default PostgreSQL port 5432.
 
