@@ -4,7 +4,7 @@ from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
-from load_data import register_commands
+from load_data import register_commands, load_data
 
 app = Flask(__name__)
 CORS(app)
@@ -107,6 +107,11 @@ def delete_project(id):
     db.session.commit()
     return jsonify({'message': 'Project deleted'})
 
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Health check endpoint to ensure the service is running."""
+    return jsonify({"status": "healthy"}), 200
+
 @app.errorhandler(404)
 def not_found(error):
     """Error handler for 404 Not Found."""
@@ -118,15 +123,50 @@ def populate_database():
         if not CarbonProject.query.first():
             print("No projects found, populating database...")
             projects = [
-                CarbonProject(name='Green Energy Project', description='A project to create sustainable green energy solutions.', rating=5),
-                CarbonProject(name='Reforestation Initiative', description='A project aimed at reforesting depleted forests.', rating=4),
-                CarbonProject(name='Ocean Cleanup', description='A project to clean plastics and other waste from the oceans.', rating=5)
+                CarbonProject(
+                    facility_name='Green Energy Project',
+                    city='City A',
+                    state='State A',
+                    zip_code='12345',
+                    address='123 Green St',
+                    county='County A',
+                    latitude=40.7128,
+                    longitude=-74.0060,
+                    industry_type='Renewable Energy',
+                    total_mass_co2_sequestered=5000.0
+                ),
+                CarbonProject(
+                    facility_name='Reforestation Initiative',
+                    city='City B',
+                    state='State B',
+                    zip_code='54321',
+                    address='456 Forest Ave',
+                    county='County B',
+                    latitude=34.0522,
+                    longitude=-118.2437,
+                    industry_type='Reforestation',
+                    total_mass_co2_sequestered=12000.0
+                ),
+                CarbonProject(
+                    facility_name='Ocean Cleanup',
+                    city='City C',
+                    state='State C',
+                    zip_code='67890',
+                    address='789 Ocean Blvd',
+                    county='County C',
+                    latitude=37.7749,
+                    longitude=-122.4194,
+                    industry_type='Oceanic Preservation',
+                    total_mass_co2_sequestered=8000.0
+                )
             ]
             db.session.bulk_save_objects(projects)
             db.session.commit()
             print("Database populated with initial data.")
         else:
             print("Database already populated.")
+    # Ensure the load_data function is called here
+    load_data()
 
 @app.cli.command("populate_db")
 def populate_database_command():

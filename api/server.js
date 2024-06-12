@@ -11,10 +11,11 @@ app.use(express.json());
 
 app.get('/projects', async (req, res) => {
   try {
-    // Use the Docker Compose service name `backend` and the internal port
-    const response = await axios.get('http://backend:5000/projects');
+    // Ensure this URL is correct and accessible from the API container
+    const response = await axios.get('http://backend:5002/projects');
     res.json(response.data);
   } catch (error) {
+    console.error('Error fetching projects:', error.message);
     res.status(500).json({ error: 'Error fetching projects' });
   }
 });
