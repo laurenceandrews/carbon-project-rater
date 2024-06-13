@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: carbon_project_rater
+    schema: public
+    tables:
+      - name: carbon_project
+
+models:
+  - name: total_co2_by_industry
+    description: "Total CO2 sequestered by industry type"
+    columns:
+      - name: industry_type
+        description: "The type of industry"
+      - name: total_co2
+        description: "Total CO2 sequestered"
