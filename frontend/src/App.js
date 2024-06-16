@@ -1,6 +1,7 @@
 import React from 'react';
 import './App.css';
 import ProjectList from './components/ProjectList';
+import Co2ByIndustry from './components/Co2ByIndustry';
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
       </header>
       <main>
         <ProjectList />
+        <Co2ByIndustry />
       </main>
     </div>
   );

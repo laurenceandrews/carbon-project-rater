@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
 from load_data import register_commands, load_data
+from sqlalchemy import text
 
 app = Flask(__name__)
 CORS(app)
@@ -60,6 +61,15 @@ def get_projects():
             'rating': None  # Assuming this will be calculated or set later
         } for p in projects
     ]})
+
+@app.route('/co2_by_industry')
+def get_co2_by_industry():
+    """Endpoint to retrieve total CO2 sequestered by industry."""
+    with db.engine.connect() as connection:
+        result = connection.execute(text("SELECT * FROM public.total_co2_by_industry"))
+        co2_by_industry = [{'industry_type': row[0], 'total_co2': row[1]} for row in result]
+    app.logger.debug('CO2 by industry data: %s', co2_by_industry)
+    return jsonify({'co2_by_industry': co2_by_industry})
 
 @app.route('/projects', methods=['POST'])
 def create_project():
