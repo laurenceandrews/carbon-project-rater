@@ -7,6 +7,7 @@ from flask_migrate import Migrate
 from load_data import register_commands, load_data, load_industry_types, industry_types
 from sqlalchemy import text
 import re
+from collections import defaultdict
 
 app = Flask(__name__)
 CORS(app)
@@ -74,11 +75,10 @@ def get_co2_by_industry():
     ensure_industry_types_loaded()  # Ensure industry types are loaded
     with db.engine.connect() as connection:
         result = connection.execute(text("SELECT * FROM public.total_co2_by_industry"))
-        co2_by_industry = []
+        co2_by_industry = defaultdict(float)  # Use a default dictionary to aggregate CO2 by industry
         for row in result:
             industry_types_str = row[0]  # Access the industry_type column
             total_co2 = row[1]  # Access the total_co2 column
-            industry_names = []
             for subpart in industry_types_str.split(','):
                 subpart_clean = re.sub(r'\([^)]*\)', '', subpart).strip()  # Remove parentheses and their contents
                 subpart_clean = re.sub(r'[^A-Za-z-]', '', subpart_clean)  # Remove non-alphabetic characters except hyphen
@@ -89,13 +89,11 @@ def get_co2_by_industry():
                     app.logger.warning(f'No mapping found for subpart "{subpart_clean}", using original subpart "{subpart_clean}"')
                 else:
                     app.logger.debug(f'Mapped subpart "{subpart_clean}" to industry name "{industry_name}"')
-                industry_names.append(industry_name)
-            co2_by_industry.append({
-                'industry_type': ', '.join(industry_names),
-                'total_co2': total_co2
-            })
-    app.logger.debug('CO2 by industry data: %s', co2_by_industry)
-    return jsonify({'co2_by_industry': co2_by_industry})
+                co2_by_industry[industry_name] += total_co2
+
+    co2_by_industry_list = [{'industry_type': industry, 'total_co2': total_co2} for industry, total_co2 in co2_by_industry.items()]
+    app.logger.debug('CO2 by industry data: %s', co2_by_industry_list)
+    return jsonify({'co2_by_industry': co2_by_industry_list})
 
 @app.route('/projects', methods=['POST'])
 def create_project():
