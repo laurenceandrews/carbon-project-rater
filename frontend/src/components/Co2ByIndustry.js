@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { Table } from 'reactstrap';
 
 function Co2ByIndustry() {
   const [data, setData] = useState([]);
@@ -14,9 +15,9 @@ function Co2ByIndustry() {
   }, []);
 
   return (
-    <div>
+    <div className="table-container">
       <h2>Total CO2 Sequestered by Industry</h2>
-      <table>
+      <Table striped bordered>
         <thead>
           <tr>
             <th>Industry Type</th>
@@ -31,7 +32,7 @@ function Co2ByIndustry() {
             </tr>
           ))}
         </tbody>
-      </table>
+      </Table>
     </div>
   );
 }

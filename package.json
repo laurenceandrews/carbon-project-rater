@@ -3,5 +3,9 @@
     "@babel/preset-env": "^7.24.5",
     "@babel/preset-react": "^7.24.1",
     "cypress": "^13.9.0"
+  },
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "reactstrap": "^9.2.2"
   }
 }

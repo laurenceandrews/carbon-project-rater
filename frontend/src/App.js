@@ -9,7 +9,7 @@ function App() {
       <header className="App-header">
         <h1>Welcome to the Carbon Project Rater</h1>
       </header>
-      <main>
+      <main className="container">
         <ProjectList />
         <Co2ByIndustry />
       </main>
