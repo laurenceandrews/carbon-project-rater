@@ -15,7 +15,7 @@ The Carbon Project Rater is a full-stack application designed to rate carbon off
 - `backend/`: Contains Flask application setup and SQLAlchemy models.
 - `api/`: Node.js and Express setup for API management.
 - `frontend/`: React application setup including components and services.
-- `dbt_project/`: Contains DBT models for data transformation in PostgreSQL.
+- `dbt/`: Contains DBT models for data transformation in PostgreSQL.
 - `docker-compose.yml`: Defines the services, networks, and volumes for docker containers.
 
 ## Features
@@ -24,6 +24,17 @@ The Carbon Project Rater is a full-stack application designed to rate carbon off
 - Interactive frontend for displaying project ratings.
 - Automated data loading from CSV files.
 - Data transformation using DBT for efficient data handling and reporting.
+
+## CO2 by Industry Data
+The application includes an endpoint to retrieve the total CO2 sequestered by industry. This data is transformed and aggregated using DBT (Data Build Tool).
+
+### DBT (Data Build Tool)
+DBT is used to transform raw data in the PostgreSQL database into a format that is easier to query and analyze. The DBT models are located in the `dbt/` directory and include the following transformations:
+- **Aggregating CO2 Data**: Aggregates the total mass of CO2 sequestered by industry type from raw project data.
+- **Creating Views**: Creates views in the database to simplify querying CO2 data by industry.
+
+### Example Endpoint
+- **GET /co2_by_industry**: Retrieves the total CO2 sequestered by industry. The endpoint queries the transformed data in the PostgreSQL database, which has been processed by DBT.
 
 ## Setup and Installation
 
@@ -40,7 +51,7 @@ To get the application running locally with Docker:
    cd carbon-project-rater
 ```
 
-3. Build and run the containers:
+2. Build and run the containers:
 ```
    # Ensure docker desktop is running
    docker-compose up --build
@@ -52,16 +63,22 @@ This command will start all services specified in `docker-compose.yml`. The fron
 How to run the automated tests for this system:
 
 - Backend tests:
+```
   cd backend
   python -m unittest
+```
 
 - API tests:
+```
   cd api
   npm test
+```
 
 - Frontend tests:
+```
   cd frontend
   npm test
+```
 
 ## Deployment
 This application is designed to be deployed using AWS services. Here's a general guide:
