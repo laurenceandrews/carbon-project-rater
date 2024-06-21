@@ -30,6 +30,8 @@ def upgrade():
     sa.Column('longitude', sa.Float(), nullable=True),
     sa.Column('industry_type', sa.String(length=255), nullable=True),
     sa.Column('total_mass_co2_sequestered', sa.Float(), nullable=True),
+    sa.Column('duration_years', sa.Float(), nullable=True),
+    sa.Column('additional_benefits', sa.String(length=255), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###

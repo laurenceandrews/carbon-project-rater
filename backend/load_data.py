@@ -37,7 +37,9 @@ def load_data():
                 latitude=float(row['Latitude']),
                 longitude=float(row['Longitude']),
                 industry_type=row['Industry Type (subparts)'],
-                total_mass_co2_sequestered=float(row['2022 Total Mass CO2 Sequestered'])
+                total_mass_co2_sequestered=float(row['2022 Total Mass CO2 Sequestered']),
+                duration_years=float(row['Duration']) if 'Duration' in row else None,
+                additional_benefits=row['Additional Benefits'] if 'Additional Benefits' in row else None
             )
             db.session.add(project)
         db.session.commit()

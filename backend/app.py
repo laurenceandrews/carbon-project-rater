@@ -34,6 +34,42 @@ class CarbonProject(db.Model):
     longitude = db.Column(db.Float)
     industry_type = db.Column(db.String(255))
     total_mass_co2_sequestered = db.Column(db.Float)
+    duration_years = db.Column(db.Float, nullable=True)
+    additional_benefits = db.Column(db.String(255), nullable=True)
+
+    def calculate_rating(self):
+        # Define the weights
+        weights = {
+            'total_co2': 0.4,
+            'project_type': 0.2,
+            'location': 0.1,
+            'duration': 0.2,
+            'additional_benefits': 0.1
+        }
+
+        # Normalize scores (for simplicity, assume max values for normalization)
+        max_co2 = 5000000  # Max CO2 for normalization (this value should be updated based on your data)
+        max_duration = 20  # Max duration in years for normalization
+        max_benefits = 5  # Assume a max score of 5 for additional benefits
+
+        # Calculate individual scores
+        co2_score = min(self.total_mass_co2_sequestered / max_co2, 1.0)
+        duration_score = min(self.duration_years / max_duration, 1.0) if self.duration_years else 0
+        benefits_score = min(int(self.additional_benefits) / max_benefits, 1.0) if self.additional_benefits else 0
+
+        # Placeholder for project type and location scores
+        # These should be calculated based on your specific criteria
+        project_type_score = 0.5  # Placeholder value
+        location_score = 0.5  # Placeholder value
+
+        # Calculate the overall rating
+        rating = (weights['total_co2'] * co2_score +
+                  weights['project_type'] * project_type_score +
+                  weights['location'] * location_score +
+                  weights['duration'] * duration_score +
+                  weights['additional_benefits'] * benefits_score) * 10  # Scale to 10
+
+        return round(rating, 1)
 
     def __repr__(self):
         return f'<CarbonProject {self.facility_name}>'
@@ -65,7 +101,9 @@ def get_projects():
             'longitude': p.longitude,
             'industry_type': p.industry_type,
             'total_mass_co2_sequestered': p.total_mass_co2_sequestered,
-            'rating': None  # Assuming this will be calculated or set later
+            'duration_years': p.duration_years,
+            'additional_benefits': p.additional_benefits,
+            'rating': p.calculate_rating()
         } for p in projects
     ]})
 
