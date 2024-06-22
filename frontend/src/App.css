@@ -44,15 +44,15 @@ h2 {
   border: 1px solid #ddd;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  background-color: #f5f5f5;
+  background-color: #f1f8ef;
   text-align: left;
 }
 
 .project-card .card-title {
-  margin-bottom: 10px;
   color: #0cbb0c;
   font-size: 1.1rem;
   font-weight: 700;
+  margin-bottom: 0px;
 }
 
 .project-card .card-text {
@@ -63,6 +63,13 @@ h2 {
   font-weight: bold;
 }
 
+.card-header {
+  background-color: #f1f8ef;
+  padding: 0px;
+  padding-bottom: 5px;
+  margin-bottom: 7px;
+}
+
 .table-container {
   margin-top: 40px;
   background-color: #f1f8ef;
@@ -70,7 +77,7 @@ h2 {
   border-radius: 8px;
   text-align: left;
   border-radius: 8px;
-  border: 1px solid #e3f8de;
+  border: 1px solid #ddd;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -80,7 +87,7 @@ h2 {
 }
 
 .table-container {
-  background-color: #e3f8de;
+  background-color: #f1f8ef;
 }
 
 .project-table {
@@ -92,7 +99,7 @@ h2 {
 
 .project-table td {
   padding: 2px;
-  background-color: #f5f5f5;
+  background-color: #f1f8ef;
 }
 
 .project-table td:first-child {

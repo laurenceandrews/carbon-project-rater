@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card, CardBody, CardTitle, Table, Row, Col } from 'reactstrap';
+import ReactStars from "react-rating-stars-component";
 
 const ProjectList = () => {
   const [projects, setProjects] = useState([]);
@@ -32,7 +33,20 @@ const ProjectList = () => {
           <Col sm="12" md="6" lg="4" key={project.id}>
             <Card className="project-card">
               <CardBody>
-                <CardTitle tag="h5">{project.facility_name}</CardTitle>
+                <div className="card-header">
+                  <CardTitle tag="h5">{project.facility_name}</CardTitle>
+                  <ReactStars
+                    count={5}
+                    value={project.rating}
+                    size={24}
+                    isHalf={true}
+                    emptyIcon={<i className="far fa-star"></i>}
+                    halfIcon={<i className="fa fa-star-half-alt"></i>}
+                    fullIcon={<i className="fa fa-star"></i>}
+                    activeColor="#ffd700"
+                    edit={false}
+                  />
+                </div>
                 <Table borderless className="project-table">
                   <tbody>
                     <tr>
@@ -54,10 +68,6 @@ const ProjectList = () => {
                     <tr>
                       <td><b>Duration:</b></td>
                       <td>{project.duration_years}</td>
-                    </tr>
-                    <tr>
-                      <td><b>Rating:</b></td>
-                      <td>{project.rating}</td>
                     </tr>
                   </tbody>
                 </Table>

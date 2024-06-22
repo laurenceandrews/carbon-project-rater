@@ -45,13 +45,11 @@ class CarbonProject(db.Model):
     def calculate_raw_rating(self, all_projects):
         weights = {'total_co2': 0.5, 'duration': 0.2, 'co2_per_year': 0.3}
         
-        # Get the ranges for normalization
         max_co2 = max(p.total_mass_co2_sequestered for p in all_projects)
         min_co2 = min(p.total_mass_co2_sequestered for p in all_projects)
         max_duration = max((p.duration_years for p in all_projects if p.duration_years is not None), default=0)
         min_duration = min((p.duration_years for p in all_projects if p.duration_years is not None), default=0)
         
-        # Calculate CO2 sequestered per year
         yearly_data = [
             self.total_mass_co2_sequestered_2016, self.total_mass_co2_sequestered_2017, 
             self.total_mass_co2_sequestered_2018, self.total_mass_co2_sequestered_2019, 
@@ -68,15 +66,13 @@ class CarbonProject(db.Model):
         max_co2_per_year = max(((p.total_mass_co2_sequestered_2022 - p.total_mass_co2_sequestered_2016) / (6 - 1) for p in all_projects if p.total_mass_co2_sequestered_2016 is not None), default=0)
         min_co2_per_year = min(((p.total_mass_co2_sequestered_2022 - p.total_mass_co2_sequestered_2016) / (6 - 1) for p in all_projects if p.total_mass_co2_sequestered_2016 is not None), default=0)
 
-        # Normalize scores to a 0-1 range
         co2_score = (self.total_mass_co2_sequestered - min_co2) / (max_co2 - min_co2) if max_co2 != min_co2 else 0
         duration_score = (self.duration_years - min_duration) / (max_duration - min_duration) if self.duration_years and max_duration != min_duration else 0
         co2_per_year_score = (co2_per_year - min_co2_per_year) / (max_co2_per_year - min_co2_per_year) if max_co2_per_year != min_co2_per_year else 0
 
-        # Calculate the raw rating
         rating = (weights['total_co2'] * co2_score +
                   weights['duration'] * duration_score +
-                  weights['co2_per_year'] * co2_per_year_score) * 10  # Scale to 10
+                  weights['co2_per_year'] * co2_per_year_score) * 5
 
         return rating
 
