@@ -27,10 +27,15 @@ def load_data():
     with open(filepath, newline='', encoding='utf-8-sig') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
+            # Check if the project already exists
+            existing_project = CarbonProject.query.filter_by(facility_name=row['Facility Name']).first()
+            if existing_project:
+                continue  # Skip adding if the project already exists
+
             duration_years = sum(1 for year in ['2016 Total Mass CO2 Sequestered', '2017 Total Mass CO2 Sequestered', 
-                                                 '2018 Total Mass CO2 Sequestered', '2019 Total Mass CO2 Sequestered',
-                                                 '2020 Total Mass CO2 Sequestered', '2021 Total Mass CO2 Sequestered',
-                                                 '2022 Total Mass CO2 Sequestered'] if row[year])
+                                                '2018 Total Mass CO2 Sequestered', '2019 Total Mass CO2 Sequestered',
+                                                '2020 Total Mass CO2 Sequestered', '2021 Total Mass CO2 Sequestered',
+                                                '2022 Total Mass CO2 Sequestered'] if row[year])
             duration_years = min(duration_years, 5)
             project = CarbonProject(
                 facility_name=row['Facility Name'],
@@ -43,6 +48,13 @@ def load_data():
                 longitude=float(row['Longitude']),
                 industry_type=row['Industry Type (subparts)'],
                 total_mass_co2_sequestered=float(row['2022 Total Mass CO2 Sequestered']),
+                total_mass_co2_sequestered_2016=float(row['2016 Total Mass CO2 Sequestered']) if row['2016 Total Mass CO2 Sequestered'] else None,
+                total_mass_co2_sequestered_2017=float(row['2017 Total Mass CO2 Sequestered']) if row['2017 Total Mass CO2 Sequestered'] else None,
+                total_mass_co2_sequestered_2018=float(row['2018 Total Mass CO2 Sequestered']) if row['2018 Total Mass CO2 Sequestered'] else None,
+                total_mass_co2_sequestered_2019=float(row['2019 Total Mass CO2 Sequestered']) if row['2019 Total Mass CO2 Sequestered'] else None,
+                total_mass_co2_sequestered_2020=float(row['2020 Total Mass CO2 Sequestered']) if row['2020 Total Mass CO2 Sequestered'] else None,
+                total_mass_co2_sequestered_2021=float(row['2021 Total Mass CO2 Sequestered']) if row['2021 Total Mass CO2 Sequestered'] else None,
+                total_mass_co2_sequestered_2022=float(row['2022 Total Mass CO2 Sequestered']) if row['2022 Total Mass CO2 Sequestered'] else None,
                 duration_years=duration_years
             )
             db.session.add(project)
@@ -52,10 +64,8 @@ def load_data():
 def register_commands(app):
     @app.cli.command("load-data")
     def load_data_command():
-        """Command to load data into the database."""
         load_data()
 
     @app.cli.command("load-industry-types")
     def load_industry_types_command():
-        """Command to load industry types into the dictionary."""
         load_industry_types()

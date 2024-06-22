@@ -70,6 +70,7 @@ h2 {
   border-radius: 8px;
   text-align: left;
   border-radius: 8px;
+  border: 1px solid #e3f8de;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
