@@ -16,6 +16,15 @@ const ProjectList = () => {
       });
   }, []);
 
+  const formatIndustryText = (text) => {
+    return text.split(',').map((item, index) => (
+      <span key={index} className="industry-text">
+        {item.trim()}
+        {index < text.split(',').length - 1 && ','}<br />
+      </span>
+    ));
+  };
+
   return (
     <div>
       <Row>
@@ -35,8 +44,8 @@ const ProjectList = () => {
                       <td>{project.lat_long}</td>
                     </tr>
                     <tr>
-                      <td><b>Industry Type:</b></td>
-                      <td>{project.industry_type}</td>
+                      <td><b>Industry:</b></td>
+                      <td>{formatIndustryText(project.industry)}</td>
                     </tr>
                     <tr>
                       <td><b>Total CO2 Sequestered:</b></td>

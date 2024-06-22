@@ -11,13 +11,13 @@ def load_industry_types():
     with open(filepath, newline='', encoding='utf-8-sig') as csvfile:
         reader = csv.DictReader(csvfile)
         headers = reader.fieldnames
-        logging.debug(f"CSV Headers: {headers}")  # Add logging to check headers
+        logging.debug(f"CSV Headers: {headers}")
         for row in reader:
             try:
                 industry_types[row['Subpart Letter']] = row['Name of industry']
                 logging.debug(f"Loaded industry type: {row['Subpart Letter']} -> {row['Name of industry']}")
             except KeyError as e:
-                logging.error(f"KeyError: {e} - Row: {row}")  # Log the row that caused the error
+                logging.error(f"KeyError: {e} - Row: {row}")
     logging.debug("Industry types loaded successfully.")
     logging.debug(f"All loaded industry types: {industry_types}")
 
@@ -31,7 +31,7 @@ def load_data():
                                                  '2018 Total Mass CO2 Sequestered', '2019 Total Mass CO2 Sequestered',
                                                  '2020 Total Mass CO2 Sequestered', '2021 Total Mass CO2 Sequestered',
                                                  '2022 Total Mass CO2 Sequestered'] if row[year])
-            duration_years = min(duration_years, 5)  # Cap duration at 5+ years
+            duration_years = min(duration_years, 5)
             project = CarbonProject(
                 facility_name=row['Facility Name'],
                 city=row['City'],

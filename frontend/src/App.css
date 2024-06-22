@@ -27,10 +27,11 @@ h2 {
   margin-top: 20px;
   margin-bottom: 20px;
   color: #0cbb0c;
+  font-weight: 700;
 }
 
 #intro-paragraph {
-  margin-top: 10px; /* Increased margin */
+  margin-top: 10px;
   max-width: 60%;
   margin-left: auto;
   margin-right: auto;
@@ -51,7 +52,7 @@ h2 {
   margin-bottom: 10px;
   color: #0cbb0c;
   font-size: 1.1rem;
-  font-weight: 700
+  font-weight: 700;
 }
 
 .project-card .card-text {
@@ -64,10 +65,12 @@ h2 {
 
 .table-container {
   margin-top: 40px;
-  background-color: #e0ffe0;
+  background-color: #f1f8ef;
   padding: 20px;
   border-radius: 8px;
   text-align: left;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .table-container th,
@@ -76,18 +79,31 @@ h2 {
 }
 
 .table-container {
-  background-color: #e3f8de; /* Set background to match card */
+  background-color: #e3f8de;
 }
 
 .project-table {
-  padding: 0; /* Remove padding */
-  line-height: 1.5; /* Adjust line height */
-  background-color: transparent; /* Set background to transparent */
+  padding: 0;
+  line-height: 1.5;
+  background-color: transparent;
   margin-bottom: 0px;
 }
 
 .project-table td {
-  padding: 2px; /* Reduce padding for table cells */
-  background-color: #f5f5f5; /* Ensure table cell background matches card */
+  padding: 2px;
+  background-color: #f5f5f5;
 }
 
+.project-table td:first-child {
+  width: 35%;
+  max-width: 35%;
+  word-wrap: break-word;
+}
+
+.industry-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+}

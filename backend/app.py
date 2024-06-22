@@ -22,7 +22,6 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 class CarbonProject(db.Model):
-    """Model for carbon projects."""
     id = db.Column(db.Integer, primary_key=True)
     facility_name = db.Column(db.String(255), nullable=False)
     city = db.Column(db.String(255))
@@ -37,49 +36,47 @@ class CarbonProject(db.Model):
     duration_years = db.Column(db.Integer, nullable=True)
 
     def calculate_raw_rating(self, all_projects):
-        # Define the weights
-        weights = {
-            'total_co2': 0.8,
-            'duration': 0.2
-        }
-
-        # Get the ranges for normalization
+        weights = {'total_co2': 0.8, 'duration': 0.2}
         max_co2 = max(p.total_mass_co2_sequestered for p in all_projects)
         min_co2 = min(p.total_mass_co2_sequestered for p in all_projects)
         max_duration = max((p.duration_years for p in all_projects if p.duration_years is not None), default=0)
         min_duration = min((p.duration_years for p in all_projects if p.duration_years is not None), default=0)
-
-        # Normalize scores to a 0-1 range
         co2_score = (self.total_mass_co2_sequestered - min_co2) / (max_co2 - min_co2) if max_co2 != min_co2 else 0
         duration_score = (self.duration_years - min_duration) / (max_duration - min_duration) if self.duration_years and max_duration != min_duration else 0
-
-        # Calculate the raw rating
-        rating = (weights['total_co2'] * co2_score +
-                  weights['duration'] * duration_score) * 10  # Scale to 10
-
+        rating = (weights['total_co2'] * co2_score + weights['duration'] * duration_score) * 10
         return rating
 
     def __repr__(self):
         return f'<CarbonProject {self.facility_name}>'
 
 def ensure_industry_types_loaded():
-    """Ensure industry types are loaded."""
     if not industry_types:
         load_industry_types()
 
-@app.route('/')
-def home():
-    """Root endpoint returns a greeting."""
-    return "Hello, I'm a Carbon Project Rater!"
+def clean_industry_type(industry_type_str):
+    parts = industry_type_str.split(',')
+    full_names = []
+    for part in parts:
+        clean_part = re.sub(r'\([^)]*\)', '', part).strip()
+        if clean_part == 'RR':
+            full_names.extend(['Geologic Sequestration of Carbon Dioxide', 'CO2 Injection'])
+        else:
+            full_name = industry_types.get(clean_part, clean_part)
+            full_names.append(full_name)
+    return full_names
 
-@app.route('/projects')
+def truncate_with_ellipsis(text, max_length):
+    return text if len(text) <= max_length else text[:max_length] + '...'
+
+def format_industry_type(industry_type_str):
+    cleaned_names = clean_industry_type(industry_type_str)
+    truncated_names = [truncate_with_ellipsis(name, 30) for name in cleaned_names]
+    return ',\n'.join(truncated_names)
+
 @app.route('/projects')
 def get_projects():
-    """Endpoint to retrieve all projects."""
     projects = CarbonProject.query.all()
     raw_ratings = [p.calculate_raw_rating(projects) for p in projects]
-
-    # Normalize the raw ratings to the 1-10 range
     min_rating = min(raw_ratings)
     max_rating = max(raw_ratings)
     normalized_ratings = [(r - min_rating) / (max_rating - min_rating) * 9 + 1 for r in raw_ratings]
@@ -95,33 +92,29 @@ def get_projects():
             'address': p.address or 'N/A',
             'county': p.county or 'N/A',
             'lat_long': f"{p.latitude}, {p.longitude}" if p.latitude and p.longitude else 'N/A',
-            'industry_type': p.industry_type or 'N/A',
+            'industry': format_industry_type(p.industry_type) if p.industry_type else 'N/A',
             'total_mass_co2_sequestered': round(p.total_mass_co2_sequestered),
             'duration_years': '5+ years' if p.duration_years == 5 else (f"{int(p.duration_years)} years" if p.duration_years else 'N/A'),
-            'rating': round(rating * 2) / 2  # Round to nearest 0.5
+            'rating': round(rating * 2) / 2
         }
         projects_with_ratings.append(project_data)
     
-    # Order projects by rating, descending
     projects_with_ratings.sort(key=lambda x: x['rating'], reverse=True)
-    
     return jsonify({'projects': projects_with_ratings})
 
 @app.route('/co2_by_industry')
 def get_co2_by_industry():
-    """Endpoint to retrieve total CO2 sequestered by industry."""
-    ensure_industry_types_loaded()  # Ensure industry types are loaded
+    ensure_industry_types_loaded()
     with db.engine.connect() as connection:
         result = connection.execute(text("SELECT * FROM public.total_co2_by_industry"))
-        co2_by_industry = defaultdict(float)  # Use a default dictionary to aggregate CO2 by industry
+        co2_by_industry = defaultdict(float)
         for row in result:
-            industry_types_str = row[0]  # Access the industry_type column
-            total_co2 = row[1]  # Access the total_co2 column
+            industry_types_str = row[0]
+            total_co2 = row[1]
             for subpart in industry_types_str.split(','):
-                subpart_clean = re.sub(r'\([^)]*\)', '', subpart).strip()  # Remove parentheses and their contents
-                subpart_clean = re.sub(r'[^A-Za-z-]', '', subpart_clean)  # Remove non-alphabetic characters except hyphen
+                subpart_clean = re.sub(r'\([^)]*\)', '', subpart).strip()
+                subpart_clean = re.sub(r'[^A-Za-z-]', '', subpart_clean)
                 app.logger.debug(f'Processing subpart: "{subpart}" -> Cleaned: "{subpart_clean}"')
-                # Use industry_types dictionary to get the industry name
                 industry_name = industry_types.get(subpart_clean, subpart_clean)
                 if industry_name == subpart_clean:
                     app.logger.warning(f'No mapping found for subpart "{subpart_clean}", using original subpart "{subpart_clean}"')
@@ -135,7 +128,6 @@ def get_co2_by_industry():
 
 @app.route('/projects', methods=['POST'])
 def create_project():
-    """Endpoint to create a new project from JSON data."""
     data = request.get_json()
     if not data or 'facility_name' not in data:
         return jsonify({'error': 'Missing data'}), 400
@@ -150,7 +142,7 @@ def create_project():
         longitude=float(data.get('longitude')) if data.get('longitude') else None,
         industry_type=data.get('industry_type'),
         total_mass_co2_sequestered=float(data.get('total_mass_co2_sequestered')) if data.get('total_mass_co2_sequestered') else None,
-        duration_years=None  # Placeholder, will be calculated based on CO2 data
+        duration_years=None
     )
     db.session.add(new_project)
     db.session.commit()
@@ -158,7 +150,6 @@ def create_project():
 
 @app.route('/projects/<int:id>', methods=['PUT'])
 def update_project(id):
-    """Endpoint to update an existing project by id."""
     project = CarbonProject.query.get_or_404(id)
     data = request.get_json()
     if 'facility_name' in data:
@@ -181,13 +172,11 @@ def update_project(id):
         project.industry_type = data['industry_type']
     if 'total_mass_co2_sequestered' in data:
         project.total_mass_co2_sequestered = data['total_mass_co2_sequestered']
-    # Duration years will be recalculated based on CO2 data
     db.session.commit()
     return jsonify({'message': 'Project updated', 'project': {'facility_name': project.facility_name}})
 
 @app.route('/projects/<int:id>', methods=['DELETE'])
 def delete_project(id):
-    """Endpoint to delete a project by id."""
     project = CarbonProject.query.get_or_404(id)
     db.session.delete(project)
     db.session.commit()
@@ -195,18 +184,16 @@ def delete_project(id):
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    """Health check endpoint to ensure the service is running."""
     return jsonify({"status": "healthy"}), 200
 
 @app.errorhandler(404)
 def not_found(error):
-    """Error handler for 404 Not Found."""
     return jsonify({'error': 'Not found'}), 404
 
 def populate_database():
     print("Checking if database needs to be populated...")
     with app.app_context():
-        load_industry_types()  # Ensure industry types are loaded
+        load_industry_types()
         if not CarbonProject.query.first():
             print("No projects found, populating database...")
             projects = [
@@ -259,7 +246,6 @@ def populate_database():
 
 @app.cli.command("populate_db")
 def populate_database_command():
-    """Populates the database with initial data."""
     populate_database()
 
 if __name__ == '__main__':
