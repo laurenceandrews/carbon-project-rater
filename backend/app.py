@@ -37,39 +37,33 @@ class CarbonProject(db.Model):
     duration_years = db.Column(db.Float, nullable=True)
     additional_benefits = db.Column(db.String(255), nullable=True)
 
-    def calculate_rating(self):
+    def calculate_raw_rating(self, all_projects):
         # Define the weights
         weights = {
             'total_co2': 0.4,
-            'project_type': 0.2,
-            'location': 0.1,
-            'duration': 0.2,
-            'additional_benefits': 0.1
+            'duration': 0.4,
+            'additional_benefits': 0.2
         }
 
-        # Normalize scores (for simplicity, assume max values for normalization)
-        max_co2 = 5000000  # Max CO2 for normalization (this value should be updated based on your data)
-        max_duration = 20  # Max duration in years for normalization
-        max_benefits = 5  # Assume a max score of 5 for additional benefits
+        # Get the ranges for normalization
+        max_co2 = max(p.total_mass_co2_sequestered for p in all_projects)
+        min_co2 = min(p.total_mass_co2_sequestered for p in all_projects)
+        max_duration = max((p.duration_years for p in all_projects if p.duration_years is not None), default=0)
+        min_duration = min((p.duration_years for p in all_projects if p.duration_years is not None), default=0)
+        max_benefits = max((int(p.additional_benefits) if p.additional_benefits else 0 for p in all_projects), default=0)
+        min_benefits = min((int(p.additional_benefits) if p.additional_benefits else 0 for p in all_projects), default=0)
 
-        # Calculate individual scores
-        co2_score = min(self.total_mass_co2_sequestered / max_co2, 1.0)
-        duration_score = min(self.duration_years / max_duration, 1.0) if self.duration_years else 0
-        benefits_score = min(int(self.additional_benefits) / max_benefits, 1.0) if self.additional_benefits else 0
+        # Normalize scores to a 0-1 range
+        co2_score = (self.total_mass_co2_sequestered - min_co2) / (max_co2 - min_co2) if max_co2 != min_co2 else 0
+        duration_score = (self.duration_years - min_duration) / (max_duration - min_duration) if self.duration_years and max_duration != min_duration else 0
+        benefits_score = (int(self.additional_benefits) - min_benefits) / (max_benefits - min_benefits) if self.additional_benefits and max_benefits != min_benefits else 0
 
-        # Placeholder for project type and location scores
-        # These should be calculated based on your specific criteria
-        project_type_score = 0.5  # Placeholder value
-        location_score = 0.5  # Placeholder value
-
-        # Calculate the overall rating
+        # Calculate the raw rating
         rating = (weights['total_co2'] * co2_score +
-                  weights['project_type'] * project_type_score +
-                  weights['location'] * location_score +
                   weights['duration'] * duration_score +
                   weights['additional_benefits'] * benefits_score) * 10  # Scale to 10
 
-        return round(rating, 1)
+        return rating
 
     def __repr__(self):
         return f'<CarbonProject {self.facility_name}>'
@@ -88,8 +82,16 @@ def home():
 def get_projects():
     """Endpoint to retrieve all projects."""
     projects = CarbonProject.query.all()
-    return jsonify({'projects': [
-        {
+    raw_ratings = [p.calculate_raw_rating(projects) for p in projects]
+
+    # Normalize the raw ratings to the 1-10 range
+    min_rating = min(raw_ratings)
+    max_rating = max(raw_ratings)
+    normalized_ratings = [(r - min_rating) / (max_rating - min_rating) * 9 + 1 for r in raw_ratings]
+
+    projects_with_ratings = []
+    for p, rating in zip(projects, normalized_ratings):
+        project_data = {
             'id': p.id,
             'facility_name': p.facility_name,
             'city': p.city,
@@ -103,9 +105,10 @@ def get_projects():
             'total_mass_co2_sequestered': p.total_mass_co2_sequestered,
             'duration_years': p.duration_years,
             'additional_benefits': p.additional_benefits,
-            'rating': p.calculate_rating()
-        } for p in projects
-    ]})
+            'rating': round(rating * 2) / 2  # Round to nearest 0.5
+        }
+        projects_with_ratings.append(project_data)
+    return jsonify({'projects': projects_with_ratings})
 
 @app.route('/co2_by_industry')
 def get_co2_by_industry():
