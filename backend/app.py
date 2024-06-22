@@ -43,7 +43,7 @@ class CarbonProject(db.Model):
     duration_years = db.Column(db.Integer, nullable=True)
 
     def calculate_raw_rating(self, all_projects):
-        weights = {'total_co2': 0.5, 'duration': 0.2, 'co2_per_year': 0.3}
+        weights = {'total_co2': 0.3, 'duration': 0.2, 'co2_per_year': 0.5}
         
         max_co2 = max(p.total_mass_co2_sequestered for p in all_projects)
         min_co2 = min(p.total_mass_co2_sequestered for p in all_projects)
@@ -153,6 +153,9 @@ def get_co2_by_industry():
                 co2_by_industry[industry_name] += total_co2
 
     co2_by_industry_list = [{'industry_type': industry, 'total_co2': round(total_co2)} for industry, total_co2 in co2_by_industry.items()]
+    
+    co2_by_industry_list.sort(key=lambda x: x['total_co2'], reverse=True)
+    
     app.logger.debug('CO2 by industry data: %s', co2_by_industry_list)
     return jsonify({'co2_by_industry': co2_by_industry_list})
 
