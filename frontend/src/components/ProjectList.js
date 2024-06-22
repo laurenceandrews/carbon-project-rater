@@ -18,20 +18,21 @@ const ProjectList = () => {
 
   return (
     <div>
-      <h2>Carbon Projects</h2>
+      <p>This application provides a rating for various carbon sequestration projects based on their total mass of CO2 sequestered and duration. Note that this is an exercise and not based on scientific research.</p>
       <Row>
-        {projects.map(project => (
+        {projects.sort((a, b) => b.rating - a.rating).map(project => (
           <Col sm="12" md="6" lg="4" key={project.id}>
             <Card className="project-card">
               <CardBody>
                 <CardTitle tag="h5">{project.facility_name}</CardTitle>
-                <CardText>Location: {project.city}, {project.state} ({project.zip_code})</CardText>
-                <CardText>Address: {project.address}</CardText>
-                <CardText>County: {project.county}</CardText>
-                <CardText>Industry Type: {project.industry_type}</CardText>
-                <CardText>Latitude: {project.latitude}, Longitude: {project.longitude}</CardText>
-                <CardText>Total Mass of CO2 Sequestered (most recent year): {project.total_mass_co2_sequestered.toFixed(2)} tons</CardText>
-                <CardText>Rating: {project.rating}</CardText>
+                <CardText><b>Location:</b> {project.city}, {project.state} ({project.zip_code})</CardText>
+                <CardText><b>Address:</b> {project.address}</CardText>
+                <CardText><b>County:</b> {project.county}</CardText>
+                <CardText><b>Industry Type:</b> {project.industry_type}</CardText>
+                <CardText><b>Latitude:</b> {project.latitude}, <b>Longitude:</b> {project.longitude}</CardText>
+                <CardText><b>Total CO2 Sequestered:</b> {project.total_mass_co2_sequestered.toLocaleString()} tons</CardText>
+                <CardText><b>Duration:</b> {project.duration_years}</CardText>
+                <CardText><b>Rating:</b> {project.rating}</CardText>
               </CardBody>
             </Card>
           </Col>

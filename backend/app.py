@@ -34,15 +34,13 @@ class CarbonProject(db.Model):
     longitude = db.Column(db.Float)
     industry_type = db.Column(db.String(255))
     total_mass_co2_sequestered = db.Column(db.Float)
-    duration_years = db.Column(db.Float, nullable=True)
-    additional_benefits = db.Column(db.String(255), nullable=True)
+    duration_years = db.Column(db.Integer, nullable=True)
 
     def calculate_raw_rating(self, all_projects):
         # Define the weights
         weights = {
-            'total_co2': 0.4,
-            'duration': 0.4,
-            'additional_benefits': 0.2
+            'total_co2': 0.6,
+            'duration': 0.4
         }
 
         # Get the ranges for normalization
@@ -50,18 +48,14 @@ class CarbonProject(db.Model):
         min_co2 = min(p.total_mass_co2_sequestered for p in all_projects)
         max_duration = max((p.duration_years for p in all_projects if p.duration_years is not None), default=0)
         min_duration = min((p.duration_years for p in all_projects if p.duration_years is not None), default=0)
-        max_benefits = max((int(p.additional_benefits) if p.additional_benefits else 0 for p in all_projects), default=0)
-        min_benefits = min((int(p.additional_benefits) if p.additional_benefits else 0 for p in all_projects), default=0)
 
         # Normalize scores to a 0-1 range
         co2_score = (self.total_mass_co2_sequestered - min_co2) / (max_co2 - min_co2) if max_co2 != min_co2 else 0
         duration_score = (self.duration_years - min_duration) / (max_duration - min_duration) if self.duration_years and max_duration != min_duration else 0
-        benefits_score = (int(self.additional_benefits) - min_benefits) / (max_benefits - min_benefits) if self.additional_benefits and max_benefits != min_benefits else 0
 
         # Calculate the raw rating
         rating = (weights['total_co2'] * co2_score +
-                  weights['duration'] * duration_score +
-                  weights['additional_benefits'] * benefits_score) * 10  # Scale to 10
+                  weights['duration'] * duration_score) * 10  # Scale to 10
 
         return rating
 
@@ -102,12 +96,15 @@ def get_projects():
             'latitude': p.latitude,
             'longitude': p.longitude,
             'industry_type': p.industry_type,
-            'total_mass_co2_sequestered': p.total_mass_co2_sequestered,
-            'duration_years': p.duration_years,
-            'additional_benefits': p.additional_benefits,
+            'total_mass_co2_sequestered': round(p.total_mass_co2_sequestered),
+            'duration_years': '5+ years' if p.duration_years == 5 else (f"{p.duration_years} years" if p.duration_years else 'N/A'),
             'rating': round(rating * 2) / 2  # Round to nearest 0.5
         }
         projects_with_ratings.append(project_data)
+    
+    # Order projects by rating, descending
+    projects_with_ratings.sort(key=lambda x: x['rating'], reverse=True)
+    
     return jsonify({'projects': projects_with_ratings})
 
 @app.route('/co2_by_industry')
@@ -132,7 +129,7 @@ def get_co2_by_industry():
                     app.logger.debug(f'Mapped subpart "{subpart_clean}" to industry name "{industry_name}"')
                 co2_by_industry[industry_name] += total_co2
 
-    co2_by_industry_list = [{'industry_type': industry, 'total_co2': total_co2} for industry, total_co2 in co2_by_industry.items()]
+    co2_by_industry_list = [{'industry_type': industry, 'total_co2': round(total_co2)} for industry, total_co2 in co2_by_industry.items()]
     app.logger.debug('CO2 by industry data: %s', co2_by_industry_list)
     return jsonify({'co2_by_industry': co2_by_industry_list})
 
@@ -152,7 +149,8 @@ def create_project():
         latitude=float(data.get('latitude')) if data.get('latitude') else None,
         longitude=float(data.get('longitude')) if data.get('longitude') else None,
         industry_type=data.get('industry_type'),
-        total_mass_co2_sequestered=float(data.get('total_mass_co2_sequestered')) if data.get('total_mass_co2_sequestered') else None
+        total_mass_co2_sequestered=float(data.get('total_mass_co2_sequestered')) if data.get('total_mass_co2_sequestered') else None,
+        duration_years=None  # Placeholder, will be calculated based on CO2 data
     )
     db.session.add(new_project)
     db.session.commit()
@@ -163,16 +161,29 @@ def update_project(id):
     """Endpoint to update an existing project by id."""
     project = CarbonProject.query.get_or_404(id)
     data = request.get_json()
-    if 'name' in data:
-        project.name = data['name']
-    if 'description' in data:
-        project.description = data['description']
-    if 'rating' in data:
-        if not isinstance(data['rating'], int) or data['rating'] < 0 or data['rating'] > 5:
-            return jsonify({'error': 'Rating must be an integer between 0 and 5'}), 400
-        project.rating = data['rating']
+    if 'facility_name' in data:
+        project.facility_name = data['facility_name']
+    if 'city' in data:
+        project.city = data['city']
+    if 'state' in data:
+        project.state = data['state']
+    if 'zip_code' in data:
+        project.zip_code = data['zip_code']
+    if 'address' in data:
+        project.address = data['address']
+    if 'county' in data:
+        project.county = data['county']
+    if 'latitude' in data:
+        project.latitude = data['latitude']
+    if 'longitude' in data:
+        project.longitude = data['longitude']
+    if 'industry_type' in data:
+        project.industry_type = data['industry_type']
+    if 'total_mass_co2_sequestered' in data:
+        project.total_mass_co2_sequestered = data['total_mass_co2_sequestered']
+    # Duration years will be recalculated based on CO2 data
     db.session.commit()
-    return jsonify({'message': 'Project updated', 'project': {'name': project.name, 'description': project.description, 'rating': project.rating}})
+    return jsonify({'message': 'Project updated', 'project': {'facility_name': project.facility_name}})
 
 @app.route('/projects/<int:id>', methods=['DELETE'])
 def delete_project(id):
@@ -209,7 +220,8 @@ def populate_database():
                     latitude=40.7128,
                     longitude=-74.0060,
                     industry_type='Renewable Energy',
-                    total_mass_co2_sequestered=5000.0
+                    total_mass_co2_sequestered=5000.0,
+                    duration_years=None  # Placeholder, will be calculated
                 ),
                 CarbonProject(
                     facility_name='Reforestation Initiative',
@@ -221,7 +233,8 @@ def populate_database():
                     latitude=34.0522,
                     longitude=-118.2437,
                     industry_type='Reforestation',
-                    total_mass_co2_sequestered=12000.0
+                    total_mass_co2_sequestered=12000.0,
+                    duration_years=None  # Placeholder, will be calculated
                 ),
                 CarbonProject(
                     facility_name='Ocean Cleanup',
@@ -233,7 +246,8 @@ def populate_database():
                     latitude=37.7749,
                     longitude=-122.4194,
                     industry_type='Oceanic Preservation',
-                    total_mass_co2_sequestered=8000.0
+                    total_mass_co2_sequestered=8000.0,
+                    duration_years=None  # Placeholder, will be calculated
                 )
             ]
             db.session.bulk_save_objects(projects)

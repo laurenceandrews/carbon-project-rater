@@ -27,6 +27,11 @@ def load_data():
     with open(filepath, newline='', encoding='utf-8-sig') as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
+            duration_years = sum(1 for year in ['2016 Total Mass CO2 Sequestered', '2017 Total Mass CO2 Sequestered', 
+                                                 '2018 Total Mass CO2 Sequestered', '2019 Total Mass CO2 Sequestered',
+                                                 '2020 Total Mass CO2 Sequestered', '2021 Total Mass CO2 Sequestered',
+                                                 '2022 Total Mass CO2 Sequestered'] if row[year])
+            duration_years = min(duration_years, 5)  # Cap duration at 5+ years
             project = CarbonProject(
                 facility_name=row['Facility Name'],
                 city=row['City'],
@@ -38,8 +43,7 @@ def load_data():
                 longitude=float(row['Longitude']),
                 industry_type=row['Industry Type (subparts)'],
                 total_mass_co2_sequestered=float(row['2022 Total Mass CO2 Sequestered']),
-                duration_years=float(row['Duration']) if 'Duration' in row else None,
-                additional_benefits=row['Additional Benefits'] if 'Additional Benefits' in row else None
+                duration_years=duration_years
             )
             db.session.add(project)
         db.session.commit()

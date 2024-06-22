@@ -28,7 +28,7 @@ function Co2ByIndustry() {
           {data.map((item, index) => (
             <tr key={index}>
               <td>{item.industry_type}</td>
-              <td>{item.total_co2}</td>
+              <td>{item.total_co2.toLocaleString()}</td>
             </tr>
           ))}
         </tbody>
