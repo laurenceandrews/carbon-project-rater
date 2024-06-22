@@ -39,8 +39,8 @@ class CarbonProject(db.Model):
     def calculate_raw_rating(self, all_projects):
         # Define the weights
         weights = {
-            'total_co2': 0.6,
-            'duration': 0.4
+            'total_co2': 0.8,
+            'duration': 0.2
         }
 
         # Get the ranges for normalization
@@ -73,6 +73,7 @@ def home():
     return "Hello, I'm a Carbon Project Rater!"
 
 @app.route('/projects')
+@app.route('/projects')
 def get_projects():
     """Endpoint to retrieve all projects."""
     projects = CarbonProject.query.all()
@@ -87,17 +88,16 @@ def get_projects():
     for p, rating in zip(projects, normalized_ratings):
         project_data = {
             'id': p.id,
-            'facility_name': p.facility_name,
-            'city': p.city,
-            'state': p.state,
-            'zip_code': p.zip_code,
-            'address': p.address,
-            'county': p.county,
-            'latitude': p.latitude,
-            'longitude': p.longitude,
-            'industry_type': p.industry_type,
+            'facility_name': p.facility_name or 'N/A',
+            'city': p.city or 'N/A',
+            'state': p.state or 'N/A',
+            'zip_code': p.zip_code or 'N/A',
+            'address': p.address or 'N/A',
+            'county': p.county or 'N/A',
+            'lat_long': f"{p.latitude}, {p.longitude}" if p.latitude and p.longitude else 'N/A',
+            'industry_type': p.industry_type or 'N/A',
             'total_mass_co2_sequestered': round(p.total_mass_co2_sequestered),
-            'duration_years': '5+ years' if p.duration_years == 5 else (f"{p.duration_years} years" if p.duration_years else 'N/A'),
+            'duration_years': '5+ years' if p.duration_years == 5 else (f"{int(p.duration_years)} years" if p.duration_years else 'N/A'),
             'rating': round(rating * 2) / 2  # Round to nearest 0.5
         }
         projects_with_ratings.append(project_data)
@@ -221,7 +221,7 @@ def populate_database():
                     longitude=-74.0060,
                     industry_type='Renewable Energy',
                     total_mass_co2_sequestered=5000.0,
-                    duration_years=None  # Placeholder, will be calculated
+                    duration_years=1
                 ),
                 CarbonProject(
                     facility_name='Reforestation Initiative',
@@ -234,7 +234,7 @@ def populate_database():
                     longitude=-118.2437,
                     industry_type='Reforestation',
                     total_mass_co2_sequestered=12000.0,
-                    duration_years=None  # Placeholder, will be calculated
+                    duration_years=2
                 ),
                 CarbonProject(
                     facility_name='Ocean Cleanup',
@@ -247,7 +247,7 @@ def populate_database():
                     longitude=-122.4194,
                     industry_type='Oceanic Preservation',
                     total_mass_co2_sequestered=8000.0,
-                    duration_years=None  # Placeholder, will be calculated
+                    duration_years=3
                 )
             ]
             db.session.bulk_save_objects(projects)

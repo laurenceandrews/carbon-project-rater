@@ -3,8 +3,9 @@
 }
 
 .App-header {
-  background-color: #2e8b57;
+  background-color: #38a023;
   min-height: 30vh;
+  margin-bottom: 10px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -19,34 +20,42 @@ main {
 
 h1 {
   color: white;
+  font-weight: 700;
 }
 
 h2 {
   margin-top: 20px;
   margin-bottom: 20px;
-  color: #006400;
-}s
+  color: #0cbb0c;
+}
 
-h2 {
-  color: #006400;
+#intro-paragraph {
+  margin-top: 10px; /* Increased margin */
+  max-width: 60%;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 1rem;
 }
 
 .project-card {
   margin-bottom: 20px;
-  padding: 20px;
+  padding: 5px;
   border: 1px solid #ddd;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   background-color: #f5f5f5;
-  text-align: left; /* Align text to the left for better readability */
+  text-align: left;
 }
 
 .project-card .card-title {
-  margin-bottom: 10px; /* Reduce space between title and the first item */
+  margin-bottom: 10px;
+  color: #0cbb0c;
+  font-size: 1.1rem;
+  font-weight: 700
 }
 
 .project-card .card-text {
-  margin-bottom: 5px; /* Reduce space between each line */
+  margin-bottom: 5px;
 }
 
 .project-card .card-text b {
@@ -55,13 +64,30 @@ h2 {
 
 .table-container {
   margin-top: 40px;
-  background-color: #e0ffe0; /* Change background to light green */
+  background-color: #e0ffe0;
   padding: 20px;
   border-radius: 8px;
-  text-align: left; /* Left align the data */
+  text-align: left;
 }
 
 .table-container th,
 .table-container td {
   text-align: left;
 }
+
+.table-container {
+  background-color: #e3f8de; /* Set background to match card */
+}
+
+.project-table {
+  padding: 0; /* Remove padding */
+  line-height: 1.5; /* Adjust line height */
+  background-color: transparent; /* Set background to transparent */
+  margin-bottom: 0px;
+}
+
+.project-table td {
+  padding: 2px; /* Reduce padding for table cells */
+  background-color: #f5f5f5; /* Ensure table cell background matches card */
+}
+

@@ -8,7 +8,7 @@ function Co2ByIndustry() {
     fetch('http://localhost:5001/co2_by_industry')
       .then(response => response.json())
       .then(data => {
-        console.log('Fetched data:', data); // Add logging to check the fetched data
+        console.log('Fetched data:', data);
         setData(data.co2_by_industry);
       })
       .catch(error => console.error('Error fetching data:', error));

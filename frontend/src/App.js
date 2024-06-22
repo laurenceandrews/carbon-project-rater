@@ -8,6 +8,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1>Welcome to the Carbon Project Rater</h1>
+        <p id="intro-paragraph">This application provides a rating for various carbon sequestration projects based on their total mass of CO2 sequestered and the duration of the project to date. Please note, this app is an exercise and not based on scientific research.</p>
       </header>
       <main className="container">
         <ProjectList />
