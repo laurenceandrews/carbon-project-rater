@@ -1,7 +1,7 @@
 # 🌍 Carbon Project Rater
 
 ## 📊 Overview 
-The Carbon Project Rater is a full-stack application designed to rate carbon offset projects based on their effectiveness in emissions capture, avoidance, and sequestration. This system utilizes a combination of modern technologies to provide a robust backend, a dynamic frontend, and an efficient API layer.
+The Carbon Project Rater is a full-stack application designed to rate carbon offset projects based on their effectiveness in emissions capture, avoidance, and sequestration. This system is currently an exercise in utilising a combination of industry standard tools and modern technologies to provide a robust backend, frontend, and API layer.
 
 ![Home Page](./screenshots/Home.png)
 
