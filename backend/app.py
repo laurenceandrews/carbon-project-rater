@@ -10,9 +10,10 @@ from load_data import register_commands
 from utils import load_industry_types, industry_types
 import re
 from collections import defaultdict
+from sqlalchemy import text
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://postgres:password@carbon-project-rater-db.cb6smiis4efz.eu-north-1.rds.amazonaws.com/carbon_project_rater')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False

@@ -5,15 +5,20 @@ import ReactStars from "react-rating-stars-component";
 
 const ProjectList = () => {
   const [projects, setProjects] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`http://api-discovery.carbon-project-rater-namespace:5001/api/projects`)
+    axios.get(`http://case-study.laurenceandrews.com/api/projects`)
       .then(response => {
         console.log("Projects data received:", response.data.projects);
         setProjects(response.data.projects);
+        setLoading(false);
       })
       .catch(error => {
         console.error('Error fetching projects data!', error);
+        setError(error);
+        setLoading(false);
       });
   }, []);
 
@@ -25,6 +30,14 @@ const ProjectList = () => {
       </span>
     ));
   };
+
+  if (loading) {
+    return <p>Loading projects...</p>;
+  }
+
+  if (error) {
+    return <p>Error loading projects: {error.message}</p>;
+  }
 
   return (
     <div>

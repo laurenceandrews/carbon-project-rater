@@ -3,18 +3,31 @@ import { Table } from 'reactstrap';
 
 function Co2ByIndustry() {
   const [data, setData] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`http://api-discovery.carbon-project-rater-namespace:5001/api/co2_by_industry`)
+    fetch(`http://case-study.laurenceandrews.com/api/co2_by_industry`)
       .then(response => response.json())
       .then(data => {
         console.log('Fetched CO2 data:', data);
         setData(data.co2_by_industry);
+        setLoading(false);
       })
       .catch(error => {
         console.error('Error fetching CO2 by industry data:', error);
+        setError(error);
+        setLoading(false);
       });
   }, []);
+
+  if (loading) {
+    return <p>Loading CO2 data...</p>;
+  }
+
+  if (error) {
+    return <p>Error loading CO2 data: {error.message}</p>;
+  }
 
   return (
     <div className="table-container">
