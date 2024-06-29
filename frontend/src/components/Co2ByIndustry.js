@@ -5,13 +5,15 @@ function Co2ByIndustry() {
   const [data, setData] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:5001/co2_by_industry')
+    fetch(`http://api-discovery.carbon-project-rater-namespace:5001/api/co2_by_industry`)
       .then(response => response.json())
       .then(data => {
-        console.log('Fetched data:', data);
+        console.log('Fetched CO2 data:', data);
         setData(data.co2_by_industry);
       })
-      .catch(error => console.error('Error fetching data:', error));
+      .catch(error => {
+        console.error('Error fetching CO2 by industry data:', error);
+      });
   }, []);
 
   return (
@@ -25,12 +27,12 @@ function Co2ByIndustry() {
           </tr>
         </thead>
         <tbody>
-          {data.map((item, index) => (
+          {data.length > 0 ? data.map((item, index) => (
             <tr key={index}>
               <td>{item.industry_type}</td>
               <td>{item.total_co2.toLocaleString()}</td>
             </tr>
-          ))}
+          )) : <tr><td colSpan="2">No data available</td></tr>}
         </tbody>
       </Table>
     </div>

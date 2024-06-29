@@ -7,13 +7,13 @@ const ProjectList = () => {
   const [projects, setProjects] = useState([]);
 
   useEffect(() => {
-    axios.get('http://localhost:5001/projects')
+    axios.get(`http://api-discovery.carbon-project-rater-namespace:5001/api/projects`)
       .then(response => {
-        console.log("Data received:", response.data.projects);
+        console.log("Projects data received:", response.data.projects);
         setProjects(response.data.projects);
       })
       .catch(error => {
-        console.error('There was an error fetching the projects!', error);
+        console.error('Error fetching projects data!', error);
       });
   }, []);
 
@@ -29,7 +29,7 @@ const ProjectList = () => {
   return (
     <div>
       <Row>
-        {projects.sort((a, b) => b.rating - a.rating).map(project => (
+        {projects.length > 0 ? projects.sort((a, b) => b.rating - a.rating).map(project => (
           <Col sm="12" md="6" lg="4" key={project.id}>
             <Card className="project-card">
               <CardBody>
@@ -74,7 +74,7 @@ const ProjectList = () => {
               </CardBody>
             </Card>
           </Col>
-        ))}
+        )) : <Col><p>No projects available</p></Col>}
       </Row>
     </div>
   );

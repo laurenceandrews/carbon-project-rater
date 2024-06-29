@@ -3,7 +3,7 @@ carbon_project_rater:
   outputs:
     dev:
       type: postgres
-      host: db
+      host: carbon-project-rater-db.cb6smiis4efz.eu-north-1.rds.amazonaws.com
       port: 5432
       user: postgres
       password: password

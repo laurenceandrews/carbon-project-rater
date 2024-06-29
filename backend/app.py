@@ -1,83 +1,27 @@
+# backend/app.py
+
 import logging
 import os
 from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flask_migrate import Migrate
-from load_data import register_commands, load_data, load_industry_types, industry_types
-from sqlalchemy import text
+from models import db, CarbonProject
+from load_data import register_commands
+from utils import load_industry_types, industry_types
 import re
 from collections import defaultdict
 
 app = Flask(__name__)
 CORS(app)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://postgres:password@carbon-project-rater-db.cb6smiis4efz.eu-north-1.rds.amazonaws.com/carbon_project_rater')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
+migrate = Migrate(app, db)
+
 register_commands(app)
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
-
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL', 'postgresql://postgres:password@db/carbon_project_rater')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-
-class CarbonProject(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    facility_name = db.Column(db.String(255), nullable=False)
-    city = db.Column(db.String(255))
-    state = db.Column(db.String(255))
-    zip_code = db.Column(db.String(10))
-    address = db.Column(db.String(255))
-    county = db.Column(db.String(255))
-    latitude = db.Column(db.Float)
-    longitude = db.Column(db.Float)
-    industry_type = db.Column(db.String(255))
-    total_mass_co2_sequestered = db.Column(db.Float)
-    total_mass_co2_sequestered_2016 = db.Column(db.Float, nullable=True)
-    total_mass_co2_sequestered_2017 = db.Column(db.Float, nullable=True)
-    total_mass_co2_sequestered_2018 = db.Column(db.Float, nullable=True)
-    total_mass_co2_sequestered_2019 = db.Column(db.Float, nullable=True)
-    total_mass_co2_sequestered_2020 = db.Column(db.Float, nullable=True)
-    total_mass_co2_sequestered_2021 = db.Column(db.Float, nullable=True)
-    total_mass_co2_sequestered_2022 = db.Column(db.Float, nullable=True)
-    duration_years = db.Column(db.Integer, nullable=True)
-
-    def calculate_raw_rating(self, all_projects):
-        weights = {'total_co2': 0.3, 'duration': 0.2, 'co2_per_year': 0.5}
-        
-        max_co2 = max(p.total_mass_co2_sequestered for p in all_projects)
-        min_co2 = min(p.total_mass_co2_sequestered for p in all_projects)
-        max_duration = max((p.duration_years for p in all_projects if p.duration_years is not None), default=0)
-        min_duration = min((p.duration_years for p in all_projects if p.duration_years is not None), default=0)
-        
-        yearly_data = [
-            self.total_mass_co2_sequestered_2016, self.total_mass_co2_sequestered_2017, 
-            self.total_mass_co2_sequestered_2018, self.total_mass_co2_sequestered_2019, 
-            self.total_mass_co2_sequestered_2020, self.total_mass_co2_sequestered_2021, 
-            self.total_mass_co2_sequestered_2022
-        ]
-        yearly_data = [data for data in yearly_data if data is not None]
-        
-        if yearly_data:
-            co2_per_year = (yearly_data[-1] - yearly_data[0]) / (len(yearly_data) - 1) if len(yearly_data) > 1 else yearly_data[0]
-        else:
-            co2_per_year = 0
-        
-        max_co2_per_year = max(((p.total_mass_co2_sequestered_2022 - p.total_mass_co2_sequestered_2016) / (6 - 1) for p in all_projects if p.total_mass_co2_sequestered_2016 is not None), default=0)
-        min_co2_per_year = min(((p.total_mass_co2_sequestered_2022 - p.total_mass_co2_sequestered_2016) / (6 - 1) for p in all_projects if p.total_mass_co2_sequestered_2016 is not None), default=0)
-
-        co2_score = (self.total_mass_co2_sequestered - min_co2) / (max_co2 - min_co2) if max_co2 != min_co2 else 0
-        duration_score = (self.duration_years - min_duration) / (max_duration - min_duration) if self.duration_years and max_duration != min_duration else 0
-        co2_per_year_score = (co2_per_year - min_co2_per_year) / (max_co2_per_year - min_co2_per_year) if max_co2_per_year != min_co2_per_year else 0
-
-        rating = (weights['total_co2'] * co2_score +
-                  weights['duration'] * duration_score +
-                  weights['co2_per_year'] * co2_per_year_score) * 5
-
-        return rating
-
-    def __repr__(self):
-        return f'<CarbonProject {self.facility_name}>'
 
 def ensure_industry_types_loaded():
     if not industry_types:
@@ -106,9 +50,15 @@ def format_industry_type(industry_type_str):
 @app.route('/projects')
 def get_projects():
     projects = CarbonProject.query.all()
+    if not projects:
+        app.logger.debug('No projects found in the database.')
+
     raw_ratings = [p.calculate_raw_rating(projects) for p in projects]
-    min_rating = min(raw_ratings)
-    max_rating = max(raw_ratings)
+    if not raw_ratings:
+        app.logger.debug('No raw ratings calculated.')
+
+    min_rating = min(raw_ratings, default=0)
+    max_rating = max(raw_ratings, default=0)
     normalized_ratings = [(r - min_rating) / (max_rating - min_rating) * 9 + 1 for r in raw_ratings]
 
     projects_with_ratings = []
@@ -128,34 +78,40 @@ def get_projects():
             'rating': round(rating * 2) / 2
         }
         projects_with_ratings.append(project_data)
-    
+
+    if not projects_with_ratings:
+        app.logger.debug('No projects with ratings found.')
+
     projects_with_ratings.sort(key=lambda x: x['rating'], reverse=True)
+    app.logger.debug(f'Projects with ratings: {projects_with_ratings}')
     return jsonify({'projects': projects_with_ratings})
 
 @app.route('/co2_by_industry')
 def get_co2_by_industry():
     ensure_industry_types_loaded()
-    with db.engine.connect() as connection:
-        result = connection.execute(text("SELECT * FROM public.total_co2_by_industry"))
-        co2_by_industry = defaultdict(float)
-        for row in result:
-            industry_types_str = row[0]
-            total_co2 = row[1]
-            for subpart in industry_types_str.split(','):
-                subpart_clean = re.sub(r'\([^)]*\)', '', subpart).strip()
-                subpart_clean = re.sub(r'[^A-Za-z-]', '', subpart_clean)
-                app.logger.debug(f'Processing subpart: "{subpart}" -> Cleaned: "{subpart_clean}"')
-                industry_name = industry_types.get(subpart_clean, subpart_clean)
-                if industry_name == subpart_clean:
-                    app.logger.warning(f'No mapping found for subpart "{subpart_clean}", using original subpart "{subpart_clean}"')
-                else:
-                    app.logger.debug(f'Mapped subpart "{subpart_clean}" to industry name "{industry_name}"')
-                co2_by_industry[industry_name] += total_co2
+    co2_by_industry = defaultdict(float)
+    try:
+        with db.engine.connect() as connection:
+            result = connection.execute(text("SELECT * FROM public.total_co2_by_industry"))
+            for row in result:
+                industry_types_str = row[0]
+                total_co2 = row[1]
+                for subpart in industry_types_str.split(','):
+                    subpart_clean = re.sub(r'\([^)]*\)', '', subpart).strip()
+                    subpart_clean = re.sub(r'[^A-Za-z-]', '', subpart_clean)
+                    app.logger.debug(f'Processing subpart: "{subpart}" -> Cleaned: "{subpart_clean}"')
+                    industry_name = industry_types.get(subpart_clean, subpart_clean)
+                    if industry_name == subpart_clean:
+                        app.logger.warning(f'No mapping found for subpart "{subpart_clean}", using original subpart "{subpart_clean}"')
+                    else:
+                        app.logger.debug(f'Mapped subpart "{subpart_clean}" to industry name "{industry_name}"')
+                    co2_by_industry[industry_name] += total_co2
+    except Exception as e:
+        app.logger.error(f'Error fetching CO2 by industry data: {e}')
+        return jsonify({'error': 'Error fetching CO2 by industry'}), 500
 
     co2_by_industry_list = [{'industry_type': industry, 'total_co2': round(total_co2)} for industry, total_co2 in co2_by_industry.items()]
-    
     co2_by_industry_list.sort(key=lambda x: x['total_co2'], reverse=True)
-    
     app.logger.debug('CO2 by industry data: %s', co2_by_industry_list)
     return jsonify({'co2_by_industry': co2_by_industry_list})
 
@@ -282,4 +238,4 @@ def populate_database_command():
     populate_database()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5002, debug=True)
