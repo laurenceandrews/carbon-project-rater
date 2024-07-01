@@ -3,6 +3,8 @@
 ## 📊 Overview 
 The Carbon Project Rater is a full-stack application designed to rate carbon offset projects based on their effectiveness in emissions capture, avoidance, and sequestration. This system is currently an exercise in utilising a combination of industry standard tools and modern technologies to provide a robust backend, frontend, and API layer.
 
+This application has been deployed live via AWS at http://case-study.laurenceandrews.com/.
+
 ![Home Page](./screenshots/Home.png)
 
 ## 💻 Technologies Used 
@@ -11,7 +13,7 @@ The Carbon Project Rater is a full-stack application designed to rate carbon off
 - **Frontend**: React
 - **Containerization**: Docker, Docker Compose
 - **Data Transformation**: DBT (Data Build Tool)
-- **Deployment**: AWS Services (RDS, Lambda, Amplify)
+- **Deployment**: AWS Services (RDS, ECS, ECR, EC2, VPC, IAM, AWS Cloud Map, CloudFormation)
 
 ## 📂 Project Structure
 - `backend/`: Contains Flask application setup and SQLAlchemy models.
@@ -88,11 +90,17 @@ How to run the automated tests for this system:
 ```
 
 ## 🌞 Deployment
-This application is designed to be deployed using AWS services. Here's a general guide:
+This application has been deployed live via AWS at http://case-study.laurenceandrews.com/.
 
-- **AWS RDS**: Deploy the PostgreSQL database on RDS.
-- **AWS Lambda and API Gateway**: Use Lambda to run the API layer, with API Gateway handling the routing.
-- **AWS Amplify**: Deploy the React frontend using Amplify for continuous integration and delivery from your GitHub repository.
+### AWS Services Used
+- **IAM:** Managed permissions and access control.
+- **VPC:** Configured a Virtual Private Cloud for network isolation.
+- **RDS:** Deployed PostgreSQL database on Amazon RDS.
+- **ECR:** Stored Docker images in Amazon Elastic Container Registry.
+- **ECS:** Deployed containerized services using Amazon Elastic Container Service.
+- **EC2:** Hosted the ECS cluster on Amazon EC2 instances.
+- **AWS Cloud Map:** Service discovery for ECS services.
+- **CloudFormation:** Infrastructure as code to automate the deployment of AWS resources.
 
 ## 📝 Contributing
 Contributions and pull requests are very welcome! Please fork the repository and use a feature branch.
