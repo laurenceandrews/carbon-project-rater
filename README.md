@@ -46,8 +46,11 @@ DBT is used to transform raw data in the PostgreSQL database into a format that 
 ## 🌱 Setup and Installation
 
 ### 📋 Requirements
-- Docker 19.03.0+
-- Docker Compose 1.25.0+
+- Docker Desktop: Ensure Docker Desktop is installed and running.
+  - Docker 19.03.0+
+  - Docker Compose 1.25.0+
+- Python 3.8+: Ensure Python is installed
+- Virtual Environment: Required for managing dependencies.
 
 ### 🚀 Getting Started
 To get the application running locally with Docker:
@@ -58,13 +61,28 @@ To get the application running locally with Docker:
    cd carbon-project-rater
 ```
 
-2. Build and run the containers:
+2. Set up a virtual environment:
+```
+   python -m venv venv
+```
+
+3. Activate the virtual environment:
+- On Windows:
+```
+  venv\Scripts\activate
+```
+- On MacOS/Linux:
+```
+  source venv/bin/activate
+```
+
+4. Build and run the containers:
 ```
    # Ensure docker desktop is running
    docker-compose up --build
 ```
 
-This command will start all services specified in `docker-compose.yml`. The frontend will be accessible at [http://localhost:3000](http://localhost:3000), the API at [http://localhost:5001](http://localhost:5001), and the backend at [http://localhost:4000](http://localhost:4000). The database will run on the default PostgreSQL port 5432.
+This command will install the requirements and start all services specified in `docker-compose.yml`. The frontend will be accessible at [http://localhost:3000](http://localhost:3000), the API at [http://localhost:5001](http://localhost:5001), and the backend at [http://localhost:4000](http://localhost:4000). The database will run on the default PostgreSQL port 5432.
 
 ## 🧪 Testing
 How to run the automated tests for this system:
@@ -88,7 +106,7 @@ How to run the automated tests for this system:
 ```
 
 ## 🌞 Deployment
-This application was previously deployed via AWS, but due to costs is now being developed locally.
+This application was previously deployed via AWS, but due to running costs is now being developed locally.
 
 ### AWS Services Used
 - **IAM:** Managed permissions and access control.
