@@ -8,6 +8,9 @@ from load_data import register_commands, load_data, load_industry_types, industr
 from sqlalchemy import text
 import re
 from collections import defaultdict
+from ml_models.sklearn_model import train_sklearn_model, predict_with_sklearn_model
+from ml_models.tensorflow_model import train_tensorflow_model, predict_with_tensorflow_model
+from ml_models.pytorch_model import train_pytorch_model, predict_with_pytorch_model
 
 app = Flask(__name__)
 CORS(app)
@@ -214,6 +217,36 @@ def delete_project(id):
     db.session.delete(project)
     db.session.commit()
     return jsonify({'message': 'Project deleted'})
+
+@app.route('/train_model', methods=['POST'])
+def train_model():
+    data = pd.read_csv('/app/data/CO2 Sequestered 2016-2022.csv')
+    
+    # Train models
+    sklearn_mse = train_sklearn_model(data)
+    tf_loss = train_tensorflow_model(data)
+    pytorch_loss = train_pytorch_model(data)
+    
+    return jsonify({
+        'sklearn_mse': sklearn_mse,
+        'tensorflow_loss': tf_loss,
+        'pytorch_loss': pytorch_loss
+    })
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    input_data = request.json
+    input_df = pd.DataFrame([input_data])
+    
+    sklearn_pred = predict_with_sklearn_model(input_df)
+    tensorflow_pred = predict_with_tensorflow_model(input_df)
+    pytorch_pred = predict_with_pytorch_model(torch.tensor(input_df.values, dtype=torch.float32))
+    
+    return jsonify({
+        'sklearn_prediction': sklearn_pred.tolist(),
+        'tensorflow_prediction': tensorflow_pred.tolist(),
+        'pytorch_prediction': pytorch_pred.tolist()
+    })
 
 @app.route('/health', methods=['GET'])
 def health_check():

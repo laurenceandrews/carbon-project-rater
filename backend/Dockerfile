@@ -1,6 +1,7 @@
-# Dockerfile for the backend
+# Use the official Python slim image as a base
 FROM python:3.12-slim
 
+# Set the working directory inside the container
 WORKDIR /app
 
 # Copy the CSV data files from the data directory into the container
@@ -15,9 +16,12 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
     && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
-# Install Python dependencies
+# Install Python dependencies, including pandas
 COPY requirements.txt /app/
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Verify installation by listing installed packages
+RUN pip list
 
 # Copy the rest of the application
 COPY . /app

@@ -26,6 +26,7 @@ services:
     volumes:
       - ./backend/migrations:/app/migrations
       - ./backend/data:/app/data
+      - ./backend/ml_models:/app/ml_models
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:5002/health || exit 1"]
       interval: 10s
@@ -68,3 +69,4 @@ services:
 
 volumes:
   db_data:
+  ml_models_data:
