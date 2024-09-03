@@ -332,31 +332,25 @@ cypress.env.json
 node_modules/
 
 # Docker
+# Ignore all Dockerfiles
 **/Dockerfile
+# Exception: do not ignore these specific Dockerfiles
+!/frontend/Dockerfile
+!/api/Dockerfile
+!/backend/Dockerfile
+!/dbt/Dockerfile
+
+# Ignore all docker-compose files
 **/docker-compose*.yml
-**/docker.env
-.dockerignore
-docker-data/
+# Exception: do not ignore the main docker-compose.yml
+!/docker-compose.yml
 
-# Compiled Source
-*.com
-*.class
-*.dll
-*.exe
-*.o
-*.so
-
-# Packages
-*.7z
-*.dmg
-*.gz
-*.iso
-*.jar
-*.rar
-*.tar
-*.zip
-
-# Logs and databases
-*.log
+# Ignore all SQL files
 *.sql
-*.sqlite
+# Exception: do not ignore these specific SQL files
+!/dbt/carbon_project_rater/models/total_co2_by_industry.sql
+
+# Make sure other critical files are not ignored
+!/dbt/profiles.yml
+!/dbt/carbon_project_rater/dbt_project.yml
+!/dbt/carbon_project_rater/models/schema.yml
