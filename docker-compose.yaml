@@ -1,0 +1,70 @@
+version: '3.8'
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_DB: carbon_project_rater
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    ports:
+      - "4000:5002"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:password@db:5432/carbon_project_rater
+    volumes:
+      - ./backend/migrations:/app/migrations
+      - ./backend/data:/app/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5002/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: >
+      sh -c "dockerize -wait tcp://db:5432 -timeout 60s &&
+            flask db upgrade &&
+            flask populate_db &&
+            echo 'Database ready' &&
+            flask run --host=0.0.0.0 --port=5002"
+
+  dbt:
+    build: ./dbt
+    depends_on:
+      backend:
+        condition: service_healthy
+    volumes:
+      - ./dbt/carbon_project_rater:/usr/app
+    environment:
+      DBT_PROFILES_DIR: /root/.dbt
+    entrypoint: ["dbt", "run"]
+
+  api:
+    build: ./api
+    ports:
+      - "5001:5001"
+    depends_on:
+      backend:
+        condition: service_healthy
+      dbt:
+        condition: service_completed_successfully
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+
+volumes:
+  db_data:
